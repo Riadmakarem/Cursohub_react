@@ -1,6 +1,29 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Container,
+  InputAdornment,
+  IconButton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Paper,
+} from '@mui/material'
+import {
+  School,
+  Person,
+  Email,
+  Lock,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -12,6 +35,7 @@ export default function Register() {
     confirmPassword: '',
     role: 'aluno'
   })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -47,111 +71,175 @@ export default function Register() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <h1>CursoHub</h1>
-          <p>Crie sua conta</p>
-        </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #08311a 0%, #1a5c35 50%, #aadead 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4,
+        px: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <School sx={{ fontSize: 64, color: 'white', mb: 2 }} />
+          <Typography variant="h3" sx={{ color: 'white', fontWeight: 700 }}>
+            CursoHub
+          </Typography>
+          <Typography variant="subtitle1" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+            Crie sua conta
+          </Typography>
+        </Box>
 
-        <div className="auth-card">
-          <h2>Cadastro</h2>
+        <Card elevation={8}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" gutterBottom fontWeight={600} textAlign="center">
+              Cadastro
+            </Typography>
 
-          {error && <div className="alert error">{error}</div>}
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Nome completo</label>
-              <input
-                type="text"
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Nome completo"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Seu nome"
                 required
+                margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>Email</label>
-              <input
+              <TextField
+                fullWidth
+                label="Email"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="seu@email.com"
                 required
+                margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>Senha</label>
-              <input
-                type="password"
+              <TextField
+                fullWidth
+                label="Senha"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Mínimo 6 caracteres"
                 required
+                margin="normal"
+                helperText="Mínimo 6 caracteres"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>Confirmar senha</label>
-              <input
-                type="password"
+              <TextField
+                fullWidth
+                label="Confirmar senha"
+                type={showPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Repita a senha"
                 required
+                margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>Tipo de conta</label>
-              <div className="role-selector">
-                <label className={`role-option ${formData.role === 'aluno' ? 'active' : ''}`}>
-                  <input
-                    type="radio"
-                    name="role"
-                    value="aluno"
-                    checked={formData.role === 'aluno'}
-                    onChange={handleChange}
-                  />
-                  <span className="role-icon">🎓</span>
-                  <span className="role-label">Aluno</span>
-                  <span className="role-desc">Quero estudar</span>
-                </label>
+              <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
+                Tipo de conta
+              </Typography>
 
-                <label className={`role-option ${formData.role === 'professor' ? 'active' : ''}`}>
-                  <input
-                    type="radio"
-                    name="role"
-                    value="professor"
-                    checked={formData.role === 'professor'}
-                    onChange={handleChange}
-                  />
-                  <span className="role-icon">👨‍🏫</span>
-                  <span className="role-label">Professor</span>
-                  <span className="role-desc">Quero ensinar</span>
-                </label>
-              </div>
-            </div>
+              <ToggleButtonGroup
+                value={formData.role}
+                exclusive
+                onChange={(e, value) => value && setFormData(prev => ({ ...prev, role: value }))}
+                fullWidth
+                sx={{ mb: 3 }}
+              >
+                <ToggleButton value="aluno" sx={{ py: 2, flexDirection: 'column' }}>
+                  <Typography sx={{ fontSize: '2rem' }}>🎓</Typography>
+                  <Typography fontWeight={600}>Aluno</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Quero estudar
+                  </Typography>
+                </ToggleButton>
+                <ToggleButton value="professor" sx={{ py: 2, flexDirection: 'column' }}>
+                  <Typography sx={{ fontSize: '2rem' }}>👨‍🏫</Typography>
+                  <Typography fontWeight={600}>Professor</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Quero ensinar
+                  </Typography>
+                </ToggleButton>
+              </ToggleButtonGroup>
 
-            <button type="submit" className="btn btn-full" disabled={loading}>
-              {loading ? 'Criando conta...' : 'Criar conta'}
-            </button>
-          </form>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={loading}
+                sx={{ mb: 2 }}
+              >
+                {loading ? 'Criando conta...' : 'Criar conta'}
+              </Button>
+            </Box>
 
-          <div className="auth-footer">
-            <p>Já tem uma conta?</p>
-            <Link to="/login" className="btn secondary btn-full">
-              Fazer login
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+            <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Já tem uma conta?
+              </Typography>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                fullWidth
+              >
+                Fazer login
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   )
 }

@@ -1,12 +1,27 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Link as MuiLink,
+  InputAdornment,
+  IconButton,
+  Container,
+} from '@mui/material'
+import { Visibility, VisibilityOff, School, Email, Lock } from '@mui/icons-material'
 
 export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -27,58 +42,115 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <h1>CursoHub</h1>
-          <p>Plataforma de videoaulas</p>
-        </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #08311a 0%, #1a5c35 50%, #aadead 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <School sx={{ fontSize: 64, color: 'white', mb: 2 }} />
+          <Typography variant="h3" sx={{ color: 'white', fontWeight: 700 }}>
+            CursoHub
+          </Typography>
+          <Typography variant="subtitle1" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+            Plataforma de videoaulas
+          </Typography>
+        </Box>
 
-        <div className="auth-card">
-          <h2>Entrar</h2>
+        <Card elevation={8}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" gutterBottom fontWeight={600} textAlign="center">
+              Entrar
+            </Typography>
 
-          {error && <div className="alert error">{error}</div>}
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Email</label>
-              <input
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="seu@email.com"
                 required
+                margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>Senha</label>
-              <input
-                type="password"
+              <TextField
+                fullWidth
+                label="Senha"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
                 required
+                margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <Link to="/recuperar-senha" className="forgot-link">
-              Esqueceu a senha?
-            </Link>
+              <Box sx={{ textAlign: 'right', mt: 1 }}>
+                <MuiLink component={Link} to="/recuperar-senha" underline="hover">
+                  Esqueceu a senha?
+                </MuiLink>
+              </Box>
 
-            <button type="submit" className="btn btn-full" disabled={loading}>
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={loading}
+                sx={{ mt: 3, mb: 2 }}
+              >
+                {loading ? 'Entrando...' : 'Entrar'}
+              </Button>
+            </Box>
 
-          <div className="auth-footer">
-            <p>Não tem uma conta?</p>
-            <Link to="/registro" className="btn secondary btn-full">
-              Criar conta
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+            <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Não tem uma conta?
+              </Typography>
+              <Button
+                component={Link}
+                to="/registro"
+                variant="outlined"
+                fullWidth
+              >
+                Criar conta
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   )
 }

@@ -6,6 +6,42 @@ import Layout from '../../components/Layout'
 import VideoComments from '../../components/VideoComments'
 import VideoMaterials from '../../components/VideoMaterials'
 import { toEmbed } from '../../utils/helpers'
+import {
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  Button,
+  Chip,
+  Alert,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Collapse,
+  LinearProgress,
+  Divider,
+  Breadcrumbs,
+  Card,
+  CardContent,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
+  Tooltip
+} from '@mui/material'
+import {
+  Home as HomeIcon,
+  PlayCircle as PlayIcon,
+  CheckCircle as CheckIcon,
+  ExpandMore as ExpandIcon,
+  Folder as FolderIcon,
+  FolderOpen as FolderOpenIcon,
+  NavigateNext as NextIcon,
+  Comment as CommentIcon,
+  ArrowForward as ArrowIcon,
+  School as SchoolIcon
+} from '@mui/icons-material'
 
 export default function AlunoSala() {
   const { id } = useParams()
@@ -32,10 +68,12 @@ export default function AlunoSala() {
   if (!room) {
     return (
       <Layout>
-        <div className="card">
-          <p>Sala não encontrada.</p>
-          <Link to="/aluno" className="btn">Voltar</Link>
-        </div>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Alert severity="error" sx={{ mb: 2 }}>Sala não encontrada.</Alert>
+          <Button component={Link} to="/aluno" variant="contained">
+            Voltar
+          </Button>
+        </Paper>
       </Layout>
     )
   }
@@ -43,10 +81,12 @@ export default function AlunoSala() {
   if (!currentUser?.enrolledRooms?.includes(room.id) && !room.enrolledStudents?.includes(currentUser?.id)) {
     return (
       <Layout>
-        <div className="card">
-          <p>Você não está matriculado nesta sala.</p>
-          <Link to="/aluno" className="btn">Voltar</Link>
-        </div>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Alert severity="warning" sx={{ mb: 2 }}>Você não está matriculado nesta sala.</Alert>
+          <Button component={Link} to="/aluno" variant="contained">
+            Voltar
+          </Button>
+        </Paper>
       </Layout>
     )
   }
@@ -83,160 +123,247 @@ export default function AlunoSala() {
 
   return (
     <Layout>
-      <div className="breadcrumb">
-        <Link to="/aluno">Início</Link> / <span>{room.name}</span>
-      </div>
+      {/* Breadcrumbs */}
+      <Breadcrumbs separator={<NextIcon fontSize="small" />} sx={{ mb: 3 }}>
+        <Button
+          component={Link}
+          to="/aluno"
+          startIcon={<HomeIcon />}
+          size="small"
+          sx={{ textTransform: 'none' }}
+        >
+          Início
+        </Button>
+        <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SchoolIcon fontSize="small" />
+          {room.name}
+        </Typography>
+      </Breadcrumbs>
 
-      <div className="aluno-sala-layout">
+      <Grid container spacing={3}>
         {/* Sidebar with playlists */}
-        <div className="aluno-playlists">
-          <div className="card">
-            <h3>📚 Conteúdo</h3>
+        <Grid size={{ xs: 12, md: 4, lg: 3 }}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              📚 Conteúdo
+            </Typography>
             
             {room.playlists.length === 0 ? (
-              <p className="muted">Nenhum conteúdo disponível ainda.</p>
+              <Alert severity="info">Nenhum conteúdo disponível ainda.</Alert>
             ) : (
-              <div className="playlist-list">
+              <Box>
                 {room.playlists.map(p => {
                   const progress = getPlaylistProgress(p)
                   const isActive = selectedPlaylist === p.id
 
                   return (
-                    <div key={p.id} className="playlist-accordion">
-                      <div
-                        className={`playlist-header ${isActive ? 'active' : ''}`}
-                        onClick={() => setSelectedPlaylist(isActive ? null : p.id)}
-                      >
-                        <div className="playlist-title">
-                          <span className="playlist-icon">{isActive ? '📂' : '📁'}</span>
-                          <span>{p.name}</span>
-                        </div>
-                        <div className="playlist-meta">
-                          <span className="progress-mini-badge">{progress}%</span>
-                          <span className="video-count">{p.videos.length}</span>
-                        </div>
-                      </div>
-
-                      {isActive && (
-                        <div className="video-list">
-                          {p.videos.length === 0 ? (
-                            <p className="muted small">Nenhum vídeo nesta playlist</p>
-                          ) : (
-                            p.videos.map((v, index) => {
+                    <Accordion
+                      key={p.id}
+                      expanded={isActive}
+                      onChange={() => setSelectedPlaylist(isActive ? null : p.id)}
+                      sx={{ mb: 1 }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandIcon />}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', pr: 2 }}>
+                          {isActive ? <FolderOpenIcon color="primary" /> : <FolderIcon />}
+                          <Typography sx={{ flexGrow: 1 }}>{p.name}</Typography>
+                          <Chip
+                            label={`${progress}%`}
+                            size="small"
+                            color={progress === 100 ? 'success' : 'default'}
+                          />
+                          <Chip label={p.videos.length} size="small" variant="outlined" />
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ p: 0 }}>
+                        <LinearProgress
+                          variant="determinate"
+                          value={progress}
+                          sx={{ height: 4 }}
+                          color={progress === 100 ? 'success' : 'primary'}
+                        />
+                        {p.videos.length === 0 ? (
+                          <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
+                            Nenhum vídeo nesta playlist
+                          </Typography>
+                        ) : (
+                          <List dense disablePadding>
+                            {p.videos.map((v, index) => {
                               const watched = isVideoWatched(v.id)
                               const inProgress = getVideoProgress(v.id)
                               const isSelected = selectedVideo === v.id
 
                               return (
-                                <div
+                                <ListItemButton
                                   key={v.id}
-                                  className={`video-list-item ${isSelected ? 'selected' : ''} ${watched ? 'watched' : ''}`}
+                                  selected={isSelected}
                                   onClick={() => handleVideoSelect(p.id, v.id)}
+                                  sx={{
+                                    borderLeft: isSelected ? 4 : 0,
+                                    borderColor: 'primary.main',
+                                    bgcolor: watched ? 'success.50' : 'transparent'
+                                  }}
                                 >
-                                  <span className="video-number">{index + 1}</span>
-                                  <span className="video-title">{v.title}</span>
-                                  <span className="video-status">
-                                    {watched ? '✅' : inProgress > 0 ? `${inProgress}%` : '○'}
-                                  </span>
-                                </div>
+                                  <ListItemIcon sx={{ minWidth: 36 }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                      {index + 1}
+                                    </Typography>
+                                  </ListItemIcon>
+                                  <ListItemText
+                                    primary={v.title}
+                                    primaryTypographyProps={{
+                                      variant: 'body2',
+                                      noWrap: true,
+                                      fontWeight: isSelected ? 'bold' : 'normal'
+                                    }}
+                                  />
+                                  {watched ? (
+                                    <CheckIcon color="success" fontSize="small" />
+                                  ) : inProgress > 0 ? (
+                                    <Chip label={`${inProgress}%`} size="small" color="warning" />
+                                  ) : (
+                                    <PlayIcon color="disabled" fontSize="small" />
+                                  )}
+                                </ListItemButton>
                               )
-                            })
-                          )}
-                        </div>
-                      )}
-
-                      {/* Playlist progress bar */}
-                      <div className="playlist-progress-bar">
-                        <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-                      </div>
-                    </div>
+                            })}
+                          </List>
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
                   )
                 })}
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Paper>
+        </Grid>
 
         {/* Main content - video player */}
-        <div className="aluno-video-area">
+        <Grid size={{ xs: 12, md: 8, lg: 9 }}>
           {!video ? (
-            <div className="card empty-state">
-              <h3>Selecione uma aula</h3>
-              <p>Escolha uma playlist e depois um vídeo para começar a assistir.</p>
-            </div>
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <PlayIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h5" gutterBottom>
+                Selecione uma aula
+              </Typography>
+              <Typography color="text.secondary">
+                Escolha uma playlist e depois um vídeo para começar a assistir.
+              </Typography>
+            </Paper>
           ) : (
-            <>
-              <div className="card video-player-card">
-                <div className="video-player-header">
-                  <h2>{video.title}</h2>
+            <Box>
+              <Paper sx={{ p: 3, mb: 2 }}>
+                {/* Video Header */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h5" fontWeight="bold">
+                    {video.title}
+                  </Typography>
                   {isVideoWatched(video.id) && (
-                    <span className="watched-badge">✅ Assistido</span>
+                    <Chip
+                      icon={<CheckIcon />}
+                      label="Assistido"
+                      color="success"
+                    />
                   )}
-                </div>
+                </Box>
 
-                <div className="video-player">
+                {/* Video Player */}
+                <Box
+                  sx={{
+                    position: 'relative',
+                    paddingTop: '56.25%',
+                    bgcolor: 'black',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    mb: 2
+                  }}
+                >
                   <iframe
                     src={toEmbed(video.url)}
                     title={video.title}
-                    width="100%"
-                    height="450"
-                    frameBorder="0"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      border: 0
+                    }}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
-                </div>
+                </Box>
 
-                <div className="video-controls">
+                {/* Video Controls */}
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
                   {!isVideoWatched(video.id) && (
-                    <button className="btn" onClick={handleMarkWatched}>
-                      ✅ Marcar como Assistido
-                    </button>
+                    <Button
+                      variant="contained"
+                      startIcon={<CheckIcon />}
+                      onClick={handleMarkWatched}
+                    >
+                      Marcar como Assistido
+                    </Button>
                   )}
                   
                   {nextVideo && (
-                    <button className="btn secondary" onClick={handleNextVideo}>
-                      Próxima Aula ▶️
-                    </button>
+                    <Button
+                      variant="outlined"
+                      endIcon={<ArrowIcon />}
+                      onClick={handleNextVideo}
+                    >
+                      Próxima Aula
+                    </Button>
                   )}
 
-                  <button 
-                    className={`btn secondary ${showComments ? 'active' : ''}`}
+                  <Button
+                    variant={showComments ? 'contained' : 'outlined'}
+                    color="secondary"
+                    startIcon={<CommentIcon />}
                     onClick={() => setShowComments(!showComments)}
                   >
-                    💬 Comentários
-                  </button>
-                </div>
+                    Comentários
+                  </Button>
+                </Box>
 
+                {/* Description */}
                 {video.description && (
-                  <div className="video-description">
-                    <h4>Descrição</h4>
-                    <p>{video.description}</p>
-                  </div>
+                  <Box sx={{ mt: 2 }}>
+                    <Divider sx={{ mb: 2 }} />
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                      Descrição
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {video.description}
+                    </Typography>
+                  </Box>
                 )}
 
                 {/* Materials */}
-                <VideoMaterials 
-                  videoId={video.id} 
-                  roomId={room.id} 
-                  playlistId={selectedPlaylist}
-                  canEdit={false}
-                />
-              </div>
+                <Box sx={{ mt: 3 }}>
+                  <VideoMaterials 
+                    videoId={video.id} 
+                    roomId={room.id} 
+                    playlistId={selectedPlaylist}
+                    canEdit={false}
+                  />
+                </Box>
+              </Paper>
 
               {/* Comments Section */}
-              {showComments && (
-                <div className="card">
+              <Collapse in={showComments}>
+                <Paper sx={{ p: 3 }}>
                   <VideoComments 
                     videoId={video.id} 
                     roomId={room.id} 
                     playlistId={selectedPlaylist}
                   />
-                </div>
-              )}
-            </>
+                </Paper>
+              </Collapse>
+            </Box>
           )}
-        </div>
-      </div>
+        </Grid>
+      </Grid>
     </Layout>
   )
 }

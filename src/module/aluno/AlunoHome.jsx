@@ -3,6 +3,30 @@ import { Link } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
 import { useAuth } from '../../context/AuthContext'
 import Layout from '../../components/Layout'
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Button,
+  TextField,
+  Alert,
+  LinearProgress,
+  Chip,
+  Stack,
+  InputAdornment,
+} from '@mui/material'
+import {
+  VpnKey,
+  PlaylistPlay,
+  VideoLibrary,
+  School,
+  EmojiEvents,
+  Public,
+  PersonAdd,
+} from '@mui/icons-material'
 
 export default function AlunoHome() {
   const { getAllRooms, getMyRooms, enrollStudent, joinByCode } = useData()
@@ -15,7 +39,6 @@ export default function AlunoHome() {
   const myRooms = getMyRooms()
   const availableRooms = allRooms.filter(r => !currentUser?.enrolledRooms?.includes(r.id))
 
-  // Calculate progress for my rooms
   const roomsWithProgress = myRooms.map(room => {
     let total = 0
     let watched = 0
@@ -54,80 +77,181 @@ export default function AlunoHome() {
 
   return (
     <Layout>
-      <h1>Olá, {currentUser?.name}! 👋</h1>
+      <Typography variant="h4" fontWeight={700} gutterBottom>
+        Olá, {currentUser?.name}! 👋
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+        Continue seus estudos de onde parou
+      </Typography>
 
       {/* Join by Code */}
-      <section className="card" style={{ marginBottom: 24, maxWidth: 500 }}>
-        <h3>🔑 Entrar com Código de Convite</h3>
-        <form onSubmit={handleJoinByCode}>
-          <div className="form-row">
-            <input
-              type="text"
+      <Card sx={{ mb: 3, maxWidth: 500 }}>
+        <CardContent>
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            <VpnKey sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Entrar com Código de Convite
+          </Typography>
+          
+          <Box component="form" onSubmit={handleJoinByCode} sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <TextField
+              size="small"
+              placeholder="ABC123"
               value={inviteCode}
               onChange={e => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="Digite o código (ex: ABC123)"
-              style={{ letterSpacing: 2, fontWeight: 'bold' }}
+              sx={{ flex: 1 }}
+              inputProps={{ style: { letterSpacing: 3, fontWeight: 'bold', textTransform: 'uppercase' } }}
             />
-            <button type="submit" className="btn">Entrar</button>
-          </div>
-          {codeError && <p style={{ color: '#dc3545', marginTop: 8 }}>{codeError}</p>}
-          {codeSuccess && <p style={{ color: '#28a745', marginTop: 8 }}>{codeSuccess}</p>}
-        </form>
-      </section>
+            <Button type="submit" variant="contained">
+              Entrar
+            </Button>
+          </Box>
+          
+          {codeError && <Alert severity="error" sx={{ mt: 2 }}>{codeError}</Alert>}
+          {codeSuccess && <Alert severity="success" sx={{ mt: 2 }}>{codeSuccess}</Alert>}
+        </CardContent>
+      </Card>
 
-      <section className="card" style={{ marginBottom: 24 }}>
-        <h3>🎓 Minhas Salas</h3>
-        {roomsWithProgress.length === 0 ? (
-          <div className="empty-state">
-            <p>Você ainda não está matriculado em nenhuma sala.</p>
-            <p className="muted">Use um código de convite ou explore as salas disponíveis abaixo.</p>
-          </div>
-        ) : (
-          <div className="room-grid">
-            {roomsWithProgress.map(room => (
-              <Link key={room.id} to={`/aluno/sala/${room.id}`} className="room-card">
-                <h4>{room.name}</h4>
-                <p>{room.description || 'Sem descrição'}</p>
-                <div className="room-meta">
-                  <span>📋 {room.playlists.length} playlists</span>
-                  <span>🎬 {room.total} vídeos</span>
-                </div>
-                <div className="progress-bar-container" style={{ marginTop: 12 }}>
-                  <div className="progress-bar" style={{ width: `${room.progress}%` }}></div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                  <span className="small">{room.watched}/{room.total} aulas</span>
-                  <span className="small">{room.progress}%</span>
-                </div>
-                {room.progress === 100 && <div className="completion-badge" style={{ marginTop: 8 }}>🏆 Completo!</div>}
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* My Rooms */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h5" fontWeight={600} gutterBottom>
+            <School sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Minhas Salas
+          </Typography>
 
-      <section className="card">
-        <h3>🌐 Salas Públicas Disponíveis</h3>
-        {availableRooms.length === 0 ? (
-          <p className="muted">Nenhuma sala disponível para matrícula no momento.</p>
-        ) : (
-          <div className="room-grid">
-            {availableRooms.map(room => (
-              <div key={room.id} className="room-card">
-                <h4>{room.name}</h4>
-                <p>{room.description || 'Sem descrição'}</p>
-                <div className="room-meta">
-                  <span>📋 {room.playlists.length} playlists</span>
-                  <span>🎬 {room.playlists.reduce((a, p) => a + p.videos.length, 0)} vídeos</span>
-                </div>
-                <button className="btn" style={{ marginTop: 12 }} onClick={() => enrollStudent(room.id)}>
-                  Matricular-se
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+          {roomsWithProgress.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 6 }}>
+              <School sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Você ainda não está matriculado em nenhuma sala
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Use um código de convite ou explore as salas disponíveis abaixo.
+              </Typography>
+            </Box>
+          ) : (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {roomsWithProgress.map(room => (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={room.id}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      height: '100%', 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 4,
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ flex: 1 }}>
+                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                        {room.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {room.description || 'Sem descrição'}
+                      </Typography>
+                      
+                      <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                        <Chip icon={<PlaylistPlay />} label={`${room.playlists.length}`} size="small" />
+                        <Chip icon={<VideoLibrary />} label={`${room.total} vídeos`} size="small" />
+                      </Stack>
+
+                      <Box sx={{ mt: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            {room.watched}/{room.total} aulas
+                          </Typography>
+                          <Typography variant="caption" fontWeight={600}>
+                            {room.progress}%
+                          </Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={room.progress} 
+                          color={room.progress === 100 ? 'success' : 'primary'}
+                        />
+                      </Box>
+
+                      {room.progress === 100 && (
+                        <Chip 
+                          icon={<EmojiEvents />} 
+                          label="Completo!" 
+                          color="success" 
+                          sx={{ mt: 2 }}
+                        />
+                      )}
+                    </CardContent>
+                    <CardActions sx={{ p: 2, pt: 0 }}>
+                      <Button 
+                        component={Link} 
+                        to={`/aluno/sala/${room.id}`}
+                        variant="contained"
+                        fullWidth
+                      >
+                        Continuar
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Available Rooms */}
+      <Card>
+        <CardContent>
+          <Typography variant="h5" fontWeight={600} gutterBottom>
+            <Public sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Salas Públicas Disponíveis
+          </Typography>
+
+          {availableRooms.length === 0 ? (
+            <Typography color="text.secondary" sx={{ py: 3 }}>
+              Nenhuma sala disponível para matrícula no momento.
+            </Typography>
+          ) : (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {availableRooms.map(room => (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={room.id}>
+                  <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <CardContent sx={{ flex: 1 }}>
+                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                        {room.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {room.description || 'Sem descrição'}
+                      </Typography>
+                      <Stack direction="row" spacing={1}>
+                        <Chip icon={<PlaylistPlay />} label={`${room.playlists.length}`} size="small" />
+                        <Chip 
+                          icon={<VideoLibrary />} 
+                          label={`${room.playlists.reduce((a, p) => a + p.videos.length, 0)} vídeos`} 
+                          size="small" 
+                        />
+                      </Stack>
+                    </CardContent>
+                    <CardActions sx={{ p: 2, pt: 0 }}>
+                      <Button 
+                        variant="outlined" 
+                        startIcon={<PersonAdd />}
+                        fullWidth
+                        onClick={() => enrollStudent(room.id)}
+                      >
+                        Matricular-se
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </CardContent>
+      </Card>
     </Layout>
   )
 }

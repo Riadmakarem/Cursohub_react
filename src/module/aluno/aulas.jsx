@@ -1,10 +1,31 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
+import { useAuth } from '../../context/AuthContext'
 import Layout from '../../components/Layout'
+import {
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardActionArea,
+  Chip,
+  Alert,
+  Button,
+  LinearProgress
+} from '@mui/material'
+import {
+  School as SchoolIcon,
+  PlayCircle as PlayIcon,
+  VideoLibrary as VideoIcon,
+  PlaylistPlay as PlaylistIcon
+} from '@mui/icons-material'
 
 export default function AlunoAulas() {
   const { getMyRooms } = useData()
+  const { getVideoProgress } = useAuth()
   const rooms = getMyRooms()
 
   // Collect all videos from enrolled rooms
@@ -24,39 +45,125 @@ export default function AlunoAulas() {
 
   return (
     <Layout>
-      <h1>Minhas Aulas</h1>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Minhas Aulas
+      </Typography>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <p>Todas as videoaulas das salas em que você está matriculado.</p>
-        <div className="stats-inline">
-          <span>🏫 {rooms.length} salas</span>
-          <span>🎬 {allVideos.length} aulas disponíveis</span>
-        </div>
-      </div>
+      {/* Stats Summary */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          Todas as videoaulas das salas em que você está matriculado.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
+          <Chip
+            icon={<SchoolIcon />}
+            label={`${rooms.length} salas`}
+            color="primary"
+            variant="outlined"
+          />
+          <Chip
+            icon={<VideoIcon />}
+            label={`${allVideos.length} aulas disponíveis`}
+            color="secondary"
+          />
+        </Box>
+      </Paper>
 
       {allVideos.length === 0 ? (
-        <div className="card empty-state">
-          <p>Nenhuma aula disponível.</p>
-          <p className="muted">Matricule-se em uma sala para ter acesso às videoaulas.</p>
-          <Link to="/aluno" className="btn">Ver salas disponíveis</Link>
-        </div>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <VideoIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            Nenhuma aula disponível
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            Matricule-se em uma sala para ter acesso às videoaulas.
+          </Typography>
+          <Button
+            component={Link}
+            to="/aluno"
+            variant="contained"
+            startIcon={<SchoolIcon />}
+          >
+            Ver Salas Disponíveis
+          </Button>
+        </Paper>
       ) : (
-        <div className="aulas-grid">
-          {allVideos.map(video => (
-            <Link
-              key={video.id}
-              to={`/aluno/sala/${video.roomId}`}
-              className="aula-card card"
-            >
-              <div className="aula-meta">
-                <span className="tag">{video.roomName}</span>
-                <span className="tag secondary">{video.playlistName}</span>
-              </div>
-              <h4>{video.title}</h4>
-              {video.description && <p className="muted">{video.description}</p>}
-            </Link>
-          ))}
-        </div>
+        <Grid container spacing={3}>
+          {allVideos.map(video => {
+            const progress = getVideoProgress(video.id) || 0
+            
+            return (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={video.id}>
+                <Card sx={{ height: '100%' }}>
+                  <CardActionArea
+                    component={Link}
+                    to={`/aluno/sala/${video.roomId}`}
+                    sx={{ height: '100%' }}
+                  >
+                    <CardContent>
+                      <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                        <Chip
+                          label={video.roomName}
+                          size="small"
+                          color="primary"
+                        />
+                        <Chip
+                          icon={<PlaylistIcon />}
+                          label={video.playlistName}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                        <PlayIcon color="secondary" sx={{ mt: 0.3 }} />
+                        <Typography variant="h6" sx={{ lineHeight: 1.3 }}>
+                          {video.title}
+                        </Typography>
+                      </Box>
+
+                      {video.description && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            mb: 2
+                          }}
+                        >
+                          {video.description}
+                        </Typography>
+                      )}
+
+                      {progress > 0 && (
+                        <Box sx={{ mt: 'auto' }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Progresso
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {progress}%
+                            </Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={progress}
+                            sx={{ height: 6, borderRadius: 3 }}
+                            color={progress >= 90 ? 'success' : 'secondary'}
+                          />
+                        </Box>
+                      )}
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            )
+          })}
+        </Grid>
       )}
     </Layout>
   )

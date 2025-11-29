@@ -1,6 +1,22 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Container,
+  InputAdornment,
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
+} from '@mui/material'
+import { School, Email, Lock, VpnKey, CheckCircle } from '@mui/icons-material'
 
 export default function ForgotPassword() {
   const { requestPasswordReset, resetPassword } = useAuth()
@@ -8,10 +24,12 @@ export default function ForgotPassword() {
   const [token, setToken] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [step, setStep] = useState(1) // 1: request, 2: reset
+  const [step, setStep] = useState(0) // 0: request, 1: reset, 2: success
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [generatedToken, setGeneratedToken] = useState('')
+
+  const steps = ['Solicitar token', 'Redefinir senha', 'Concluído']
 
   function handleRequestReset(e) {
     e.preventDefault()
@@ -23,7 +41,7 @@ export default function ForgotPassword() {
     if (result.success) {
       setGeneratedToken(result.token)
       setMessage('Token de recuperação gerado! Use o token abaixo para redefinir sua senha.')
-      setStep(2)
+      setStep(1)
     } else {
       setError(result.error)
     }
@@ -47,121 +65,210 @@ export default function ForgotPassword() {
     const result = resetPassword(token, newPassword)
     
     if (result.success) {
-      setMessage('Senha alterada com sucesso! Você já pode fazer login.')
-      setStep(3)
+      setMessage('Senha alterada com sucesso!')
+      setStep(2)
     } else {
       setError(result.error)
     }
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <h1>CursoHub</h1>
-          <p>Recuperar senha</p>
-        </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #08311a 0%, #1a5c35 50%, #aadead 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4,
+        px: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <School sx={{ fontSize: 64, color: 'white', mb: 2 }} />
+          <Typography variant="h3" sx={{ color: 'white', fontWeight: 700 }}>
+            CursoHub
+          </Typography>
+          <Typography variant="subtitle1" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+            Recuperar senha
+          </Typography>
+        </Box>
 
-        <div className="auth-card">
-          {step === 1 && (
-            <>
-              <h2>Esqueceu a senha?</h2>
-              <p className="muted">Digite seu email para receber instruções de recuperação.</p>
+        <Card elevation={8}>
+          <CardContent sx={{ p: 4 }}>
+            <Stepper activeStep={step} sx={{ mb: 4 }}>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
 
-              {error && <div className="alert error">{error}</div>}
+            {step === 0 && (
+              <>
+                <Typography variant="h5" gutterBottom fontWeight={600} textAlign="center">
+                  Esqueceu a senha?
+                </Typography>
+                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+                  Digite seu email para receber instruções de recuperação.
+                </Typography>
 
-              <form onSubmit={handleRequestReset}>
-                <div className="form-group">
-                  <label>Email</label>
-                  <input
+                {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+                <Box component="form" onSubmit={handleRequestReset}>
+                  <TextField
+                    fullWidth
+                    label="Email"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
                     required
+                    margin="normal"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
-                </div>
 
-                <button type="submit" className="btn btn-full">
-                  Enviar token de recuperação
-                </button>
-              </form>
-            </>
-          )}
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    sx={{ mt: 3, mb: 2 }}
+                  >
+                    Enviar token de recuperação
+                  </Button>
+                </Box>
+              </>
+            )}
 
-          {step === 2 && (
-            <>
-              <h2>Redefinir senha</h2>
-              
-              {message && <div className="alert success">{message}</div>}
-              {error && <div className="alert error">{error}</div>}
+            {step === 1 && (
+              <>
+                <Typography variant="h5" gutterBottom fontWeight={600} textAlign="center">
+                  Redefinir senha
+                </Typography>
+                
+                {message && <Alert severity="success" sx={{ mb: 3 }}>{message}</Alert>}
+                {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-              {generatedToken && (
-                <div className="token-display">
-                  <p>Seu token de recuperação:</p>
-                  <code>{generatedToken}</code>
-                  <small className="muted">Em produção, este token seria enviado por email.</small>
-                </div>
-              )}
+                {generatedToken && (
+                  <Paper sx={{ p: 2, mb: 3, bgcolor: 'secondary.light', textAlign: 'center' }}>
+                    <Typography variant="body2" gutterBottom>
+                      Seu token de recuperação:
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontFamily: 'monospace',
+                        bgcolor: 'white',
+                        p: 1,
+                        borderRadius: 1,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      {generatedToken}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                      Em produção, este token seria enviado por email.
+                    </Typography>
+                  </Paper>
+                )}
 
-              <form onSubmit={handleResetPassword}>
-                <div className="form-group">
-                  <label>Token de recuperação</label>
-                  <input
-                    type="text"
+                <Box component="form" onSubmit={handleResetPassword}>
+                  <TextField
+                    fullWidth
+                    label="Token de recuperação"
                     value={token}
                     onChange={e => setToken(e.target.value)}
-                    placeholder="Cole o token aqui"
                     required
+                    margin="normal"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <VpnKey color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
-                </div>
 
-                <div className="form-group">
-                  <label>Nova senha</label>
-                  <input
+                  <TextField
+                    fullWidth
+                    label="Nova senha"
                     type="password"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
                     required
+                    margin="normal"
+                    helperText="Mínimo 6 caracteres"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
-                </div>
 
-                <div className="form-group">
-                  <label>Confirmar nova senha</label>
-                  <input
+                  <TextField
+                    fullWidth
+                    label="Confirmar nova senha"
                     type="password"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="Repita a nova senha"
                     required
+                    margin="normal"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
-                </div>
 
-                <button type="submit" className="btn btn-full">
-                  Redefinir senha
-                </button>
-              </form>
-            </>
-          )}
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    sx={{ mt: 3, mb: 2 }}
+                  >
+                    Redefinir senha
+                  </Button>
+                </Box>
+              </>
+            )}
 
-          {step === 3 && (
-            <>
-              <div className="success-state">
-                <span className="success-icon">✅</span>
-                <h2>Senha alterada!</h2>
-                <p>Sua senha foi redefinida com sucesso.</p>
-              </div>
-            </>
-          )}
+            {step === 2 && (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CheckCircle sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
+                <Typography variant="h5" fontWeight={600} gutterBottom>
+                  Senha alterada!
+                </Typography>
+                <Typography color="text.secondary">
+                  Sua senha foi redefinida com sucesso.
+                </Typography>
+              </Box>
+            )}
 
-          <div className="auth-footer">
-            <Link to="/login" className="btn secondary btn-full">
-              Voltar para login
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+            <Box sx={{ mt: 3 }}>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                fullWidth
+              >
+                Voltar para login
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   )
 }

@@ -1,5 +1,40 @@
 import React, { useState, useRef } from 'react'
 import { useData } from '../context/DataContext'
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Collapse,
+  MenuItem,
+  Stack,
+  Divider,
+  Chip,
+} from '@mui/material'
+import {
+  AttachFile,
+  Add,
+  PictureAsPdf,
+  Slideshow,
+  Description,
+  TableChart,
+  Archive,
+  Image,
+  Link as LinkIcon,
+  Folder,
+  Download,
+  OpenInNew,
+  Delete,
+  CloudUpload,
+} from '@mui/icons-material'
 
 export default function VideoMaterials({ videoId, roomId, playlistId, canEdit = false }) {
   const { getVideoMaterials, addMaterial, deleteMaterial } = useData()
@@ -30,7 +65,6 @@ export default function VideoMaterials({ videoId, roomId, playlistId, canEdit = 
     const file = e.target.files[0]
     if (!file) return
 
-    // For demo, we'll create a fake URL. In production, upload to storage
     const reader = new FileReader()
     reader.onload = () => {
       const dataUrl = reader.result
@@ -43,7 +77,7 @@ export default function VideoMaterials({ videoId, roomId, playlistId, canEdit = 
     }
     reader.readAsDataURL(file)
     
-    e.target.value = '' // Reset input
+    e.target.value = ''
   }
 
   function getFileType(filename) {
@@ -59,16 +93,16 @@ export default function VideoMaterials({ videoId, roomId, playlistId, canEdit = 
 
   function getTypeIcon(type) {
     const icons = {
-      pdf: '📄',
-      slides: '📊',
-      document: '📝',
-      spreadsheet: '📈',
-      archive: '📦',
-      image: '🖼️',
-      file: '📁',
-      link: '🔗'
+      pdf: <PictureAsPdf color="error" />,
+      slides: <Slideshow color="warning" />,
+      document: <Description color="primary" />,
+      spreadsheet: <TableChart color="success" />,
+      archive: <Archive />,
+      image: <Image color="secondary" />,
+      file: <Folder />,
+      link: <LinkIcon color="info" />
     }
-    return icons[type] || '📁'
+    return icons[type] || <Folder />
   }
 
   function formatSize(bytes) {
@@ -79,123 +113,174 @@ export default function VideoMaterials({ videoId, roomId, playlistId, canEdit = 
   }
 
   return (
-    <div className="materials-section">
-      <div className="materials-header">
-        <h4>📎 Materiais Complementares ({materials.length})</h4>
+    <Box sx={{ mt: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" fontWeight={600}>
+          <AttachFile sx={{ mr: 1, verticalAlign: 'middle' }} />
+          Materiais Complementares ({materials.length})
+        </Typography>
         {canEdit && (
-          <button className="btn btn-sm" onClick={() => setShowUpload(!showUpload)}>
-            + Adicionar
-          </button>
+          <Button 
+            size="small"
+            variant="outlined"
+            startIcon={<Add />}
+            onClick={() => setShowUpload(!showUpload)}
+          >
+            Adicionar
+          </Button>
         )}
-      </div>
+      </Box>
 
       {/* Upload Form */}
-      {canEdit && showUpload && (
-        <div className="material-upload-form card">
-          <h5>Adicionar Material</h5>
-          
-          {/* File Upload */}
-          <div className="form-group">
-            <label>Upload de Arquivo</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif"
-            />
-            <small className="muted">PDF, DOC, PPT, XLS, imagens ou arquivos compactados</small>
-          </div>
-
-          <div className="divider">ou</div>
-
-          {/* Link Form */}
-          <form onSubmit={handleAddMaterial}>
-            <div className="form-group">
-              <label>Nome do Material</label>
+      <Collapse in={canEdit && showUpload}>
+        <Card variant="outlined" sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+              Adicionar Material
+            </Typography>
+            
+            {/* File Upload */}
+            <Box sx={{ mb: 3 }}>
               <input
-                type="text"
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileUpload}
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif"
+                style={{ display: 'none' }}
+                id="material-upload"
+              />
+              <label htmlFor="material-upload">
+                <Button
+                  component="span"
+                  variant="outlined"
+                  startIcon={<CloudUpload />}
+                  fullWidth
+                  sx={{ py: 2 }}
+                >
+                  Fazer upload de arquivo
+                </Button>
+              </label>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                PDF, DOC, PPT, XLS, imagens ou arquivos compactados
+              </Typography>
+            </Box>
+
+            <Divider sx={{ my: 2 }}>
+              <Chip label="ou adicione um link" size="small" />
+            </Divider>
+
+            {/* Link Form */}
+            <Box component="form" onSubmit={handleAddMaterial}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Nome do Material"
                 value={materialName}
                 onChange={e => setMaterialName(e.target.value)}
                 placeholder="Ex: Slides da Aula 1"
+                sx={{ mb: 2 }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>URL do Material</label>
-              <input
+              <TextField
+                fullWidth
+                size="small"
+                label="URL do Material"
                 type="url"
                 value={materialUrl}
                 onChange={e => setMaterialUrl(e.target.value)}
                 placeholder="https://..."
+                sx={{ mb: 2 }}
               />
-            </div>
 
-            <div className="form-group">
-              <label>Tipo</label>
-              <select value={materialType} onChange={e => setMaterialType(e.target.value)}>
-                <option value="pdf">PDF</option>
-                <option value="slides">Slides</option>
-                <option value="document">Documento</option>
-                <option value="link">Link Externo</option>
-              </select>
-            </div>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                label="Tipo"
+                value={materialType}
+                onChange={e => setMaterialType(e.target.value)}
+                sx={{ mb: 2 }}
+              >
+                <MenuItem value="pdf">PDF</MenuItem>
+                <MenuItem value="slides">Slides</MenuItem>
+                <MenuItem value="document">Documento</MenuItem>
+                <MenuItem value="link">Link Externo</MenuItem>
+              </TextField>
 
-            <div className="form-actions">
-              <button type="submit" className="btn">Adicionar</button>
-              <button type="button" className="btn secondary" onClick={() => setShowUpload(false)}>
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+              <Stack direction="row" spacing={1}>
+                <Button type="submit" variant="contained" size="small">
+                  Adicionar
+                </Button>
+                <Button size="small" onClick={() => setShowUpload(false)}>
+                  Cancelar
+                </Button>
+              </Stack>
+            </Box>
+          </CardContent>
+        </Card>
+      </Collapse>
 
       {/* Materials List */}
-      <div className="materials-list">
-        {materials.length === 0 ? (
-          <p className="muted">Nenhum material anexado a esta aula.</p>
-        ) : (
-          materials.map(material => (
-            <div key={material.id} className="material-item">
-              <span className="material-icon">{getTypeIcon(material.type)}</span>
-              <div className="material-info">
-                <strong>{material.name}</strong>
-                {material.size && <span className="material-size">{formatSize(material.size)}</span>}
-              </div>
-              <div className="material-actions">
-                {material.url.startsWith('data:') ? (
-                  <a 
-                    href={material.url} 
-                    download={material.name}
-                    className="btn btn-sm secondary"
-                  >
-                    ⬇️ Baixar
-                  </a>
-                ) : (
-                  <a 
-                    href={material.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="btn btn-sm secondary"
-                  >
-                    🔗 Abrir
-                  </a>
-                )}
-                {canEdit && (
-                  <button 
-                    className="btn-icon danger"
-                    onClick={() => {
-                      if (confirm('Excluir material?')) deleteMaterial(material.id)
-                    }}
-                  >
-                    🗑️
-                  </button>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
+      {materials.length === 0 ? (
+        <Typography color="text.secondary" sx={{ py: 2 }}>
+          Nenhum material anexado a esta aula.
+        </Typography>
+      ) : (
+        <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
+          {materials.map((material, index) => (
+            <ListItem 
+              key={material.id}
+              divider={index < materials.length - 1}
+              sx={{ py: 1.5 }}
+            >
+              <ListItemIcon>
+                {getTypeIcon(material.type)}
+              </ListItemIcon>
+              <ListItemText
+                primary={material.name}
+                secondary={material.size ? formatSize(material.size) : null}
+              />
+              <ListItemSecondaryAction>
+                <Stack direction="row" spacing={0.5}>
+                  {material.url.startsWith('data:') ? (
+                    <IconButton
+                      component="a"
+                      href={material.url}
+                      download={material.name}
+                      size="small"
+                      color="primary"
+                    >
+                      <Download />
+                    </IconButton>
+                  ) : (
+                    <IconButton
+                      component="a"
+                      href={material.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="small"
+                      color="primary"
+                    >
+                      <OpenInNew />
+                    </IconButton>
+                  )}
+                  {canEdit && (
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => {
+                        if (confirm('Excluir material?')) deleteMaterial(material.id)
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+                </Stack>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Box>
   )
 }

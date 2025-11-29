@@ -3,6 +3,34 @@ import { Link } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
 import { useAuth } from '../../context/AuthContext'
 import Layout from '../../components/Layout'
+import {
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  LinearProgress,
+  Alert,
+  Badge
+} from '@mui/material'
+import {
+  School as SchoolIcon,
+  People as PeopleIcon,
+  PlaylistPlay as PlaylistIcon,
+  VideoLibrary as VideoIcon,
+  EmojiEvents as TrophyIcon,
+  Visibility as ViewsIcon,
+  QuestionAnswer as QuestionIcon,
+  TrendingUp as TrendingUpIcon
+} from '@mui/icons-material'
 
 export default function Estatisticas() {
   const { getMyRooms, getRoomStats } = useData()
@@ -69,125 +97,216 @@ export default function Estatisticas() {
 
   return (
     <Layout>
-      <h1>Estatísticas</h1>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Estatísticas
+      </Typography>
 
       {/* Overview Stats */}
-      <div className="stats-grid" style={{ marginBottom: 24 }}>
-        <div className="stat-card">
-          <div className="stat-number">{rooms.length}</div>
-          <div className="stat-label">Salas</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{totalStudents}</div>
-          <div className="stat-label">Alunos Únicos</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{totalPlaylists}</div>
-          <div className="stat-label">Playlists</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">{totalVideos}</div>
-          <div className="stat-label">Videoaulas</div>
-        </div>
-      </div>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 6, sm: 3 }}>
+          <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
+            <CardContent sx={{ textAlign: 'center', py: 2 }}>
+              <SchoolIcon sx={{ fontSize: 32 }} />
+              <Typography variant="h3" fontWeight="bold">{rooms.length}</Typography>
+              <Typography variant="body2">Salas</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 3 }}>
+          <Card sx={{ bgcolor: 'secondary.main', color: 'primary.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 2 }}>
+              <PeopleIcon sx={{ fontSize: 32 }} />
+              <Typography variant="h3" fontWeight="bold">{totalStudents}</Typography>
+              <Typography variant="body2">Alunos Únicos</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 3 }}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', py: 2 }}>
+              <PlaylistIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+              <Typography variant="h3" fontWeight="bold">{totalPlaylists}</Typography>
+              <Typography variant="body2">Playlists</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 3 }}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', py: 2 }}>
+              <VideoIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+              <Typography variant="h3" fontWeight="bold">{totalVideos}</Typography>
+              <Typography variant="body2">Videoaulas</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <div className="stats-layout">
+      <Grid container spacing={3}>
         {/* Top Videos */}
-        <div className="card">
-          <h3>🏆 Vídeos Mais Assistidos</h3>
-          {topVideos.length === 0 ? (
-            <p className="muted">Nenhum vídeo disponível ainda.</p>
-          ) : (
-            <div className="top-videos-list">
-              {topVideos.map((video, index) => (
-                <div key={video.id} className="top-video-item">
-                  <span className="rank">#{index + 1}</span>
-                  <div className="video-info">
-                    <strong>{video.title}</strong>
-                    <p className="muted">{video.roomName} • {video.playlistName}</p>
-                  </div>
-                  <div className="video-views">
-                    <span className="views-count">{video.watchedBy}</span>
-                    <span className="views-label">visualizações</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Paper sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TrophyIcon color="warning" /> Vídeos Mais Assistidos
+            </Typography>
+            
+            {topVideos.length === 0 ? (
+              <Alert severity="info">Nenhum vídeo disponível ainda.</Alert>
+            ) : (
+              <Box>
+                {topVideos.map((video, index) => (
+                  <Box
+                    key={video.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      py: 1.5,
+                      borderBottom: index < topVideos.length - 1 ? '1px solid' : 'none',
+                      borderColor: 'divider'
+                    }}
+                  >
+                    <Chip
+                      label={`#${index + 1}`}
+                      size="small"
+                      color={index < 3 ? 'warning' : 'default'}
+                      sx={{ minWidth: 50 }}
+                    />
+                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                      <Typography fontWeight="medium" noWrap>
+                        {video.title}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap>
+                        {video.roomName} • {video.playlistName}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      icon={<ViewsIcon />}
+                      label={video.watchedBy}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Paper>
+        </Grid>
 
         {/* Room Progress */}
-        <div className="card">
-          <h3>📊 Progresso por Sala</h3>
-          {roomProgress.length === 0 ? (
-            <p className="muted">Nenhuma sala criada ainda.</p>
-          ) : (
-            <div className="room-progress-list">
-              {roomProgress.map(room => (
-                <Link key={room.id} to={`/professor/salas/${room.id}`} className="room-progress-item">
-                  <div className="room-progress-info">
-                    <strong>{room.name}</strong>
-                    <p className="muted">{room.totalStudents} alunos • {room.totalVideos} vídeos</p>
-                  </div>
-                  <div className="progress-bar-container">
-                    <div className="progress-bar" style={{ width: `${room.avgProgress}%` }}></div>
-                    <span className="progress-text">{room.avgProgress}%</span>
-                  </div>
-                  {room.unresolvedQuestions > 0 && (
-                    <span className="questions-badge">❓ {room.unresolvedQuestions}</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Paper sx={{ p: 3, height: '100%' }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TrendingUpIcon color="primary" /> Progresso por Sala
+            </Typography>
+            
+            {roomProgress.length === 0 ? (
+              <Alert severity="info">Nenhuma sala criada ainda.</Alert>
+            ) : (
+              <Box>
+                {roomProgress.map((room, index) => (
+                  <Box
+                    key={room.id}
+                    component={Link}
+                    to={`/professor/salas/${room.id}`}
+                    sx={{
+                      display: 'block',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      py: 1.5,
+                      borderBottom: index < roomProgress.length - 1 ? '1px solid' : 'none',
+                      borderColor: 'divider',
+                      '&:hover': { bgcolor: 'action.hover' }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                      <Typography fontWeight="medium">{room.name}</Typography>
+                      {room.unresolvedQuestions > 0 && (
+                        <Badge badgeContent={room.unresolvedQuestions} color="warning">
+                          <QuestionIcon fontSize="small" />
+                        </Badge>
+                      )}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {room.totalStudents} alunos • {room.totalVideos} vídeos
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={room.avgProgress}
+                        sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
+                        color={room.avgProgress >= 80 ? 'success' : room.avgProgress >= 50 ? 'primary' : 'warning'}
+                      />
+                      <Typography variant="body2" sx={{ minWidth: 45 }}>
+                        {room.avgProgress}%
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
 
       {/* Detailed Table */}
-      <div className="card" style={{ marginTop: 24 }}>
-        <h3>📋 Detalhamento por Sala</h3>
-        <div className="stats-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Sala</th>
-                <th>Alunos</th>
-                <th>Playlists</th>
-                <th>Vídeos</th>
-                <th>Comentários</th>
-                <th>Dúvidas Pendentes</th>
-                <th>Progresso Médio</th>
-              </tr>
-            </thead>
-            <tbody>
+      <Paper sx={{ p: 3, mt: 3 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+          📋 Detalhamento por Sala
+        </Typography>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Sala</TableCell>
+                <TableCell align="center">Alunos</TableCell>
+                <TableCell align="center">Playlists</TableCell>
+                <TableCell align="center">Vídeos</TableCell>
+                <TableCell align="center">Comentários</TableCell>
+                <TableCell align="center">Dúvidas Pendentes</TableCell>
+                <TableCell>Progresso Médio</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {roomProgress.map(room => (
-                <tr key={room.id}>
-                  <td>
-                    <Link to={`/professor/salas/${room.id}`}>{room.name}</Link>
-                  </td>
-                  <td>{room.totalStudents}</td>
-                  <td>{room.totalPlaylists}</td>
-                  <td>{room.totalVideos}</td>
-                  <td>{room.totalComments}</td>
-                  <td>
-                    {room.unresolvedQuestions > 0 ? (
-                      <span className="badge danger">{room.unresolvedQuestions}</span>
-                    ) : (
-                      <span className="badge success">0</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="progress-mini">
-                      <div className="progress-bar-mini" style={{ width: `${room.avgProgress}%` }}></div>
-                      <span>{room.avgProgress}%</span>
-                    </div>
-                  </td>
-                </tr>
+                <TableRow key={room.id} hover>
+                  <TableCell>
+                    <Typography
+                      component={Link}
+                      to={`/professor/salas/${room.id}`}
+                      sx={{ textDecoration: 'none', color: 'primary.main', fontWeight: 'medium' }}
+                    >
+                      {room.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">{room.totalStudents}</TableCell>
+                  <TableCell align="center">{room.totalPlaylists}</TableCell>
+                  <TableCell align="center">{room.totalVideos}</TableCell>
+                  <TableCell align="center">{room.totalComments}</TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={room.unresolvedQuestions}
+                      size="small"
+                      color={room.unresolvedQuestions > 0 ? 'warning' : 'success'}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={room.avgProgress}
+                        sx={{ flexGrow: 1, height: 8, borderRadius: 4, maxWidth: 100 }}
+                        color={room.avgProgress >= 80 ? 'success' : room.avgProgress >= 50 ? 'primary' : 'warning'}
+                      />
+                      <Typography variant="body2">{room.avgProgress}%</Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Layout>
   )
 }
