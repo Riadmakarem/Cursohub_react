@@ -1,34 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { DataProvider } from './context/DataContext'
+import './index.css'
+
+// Professor
+import ProfessorDashboard from './module/professor/dashboard'
+import SalasLista from './module/professor/SalasLista'
+import SalaNova from './module/professor/SalaNova'
+import SalaDetalhe from './module/professor/SalaDetalhe'
+import Turmas from './module/professor/turmas'
+import Materiais from './module/professor/materiais'
+
+// Aluno
+import AlunoHome from './module/aluno/AlunoHome'
+import AlunoSala from './module/aluno/AlunoSala'
+import AlunoAulas from './module/aluno/aulas'
+import AlunoPerfil from './module/aluno/perfil'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <DataProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Redirect root to professor dashboard */}
+          <Route path="/" element={<Navigate to="/professor" replace />} />
+
+          {/* Professor routes */}
+          <Route path="/professor" element={<ProfessorDashboard />} />
+          <Route path="/professor/salas" element={<SalasLista />} />
+          <Route path="/professor/salas/nova" element={<SalaNova />} />
+          <Route path="/professor/salas/:id" element={<SalaDetalhe />} />
+          <Route path="/professor/turmas" element={<Turmas />} />
+          <Route path="/professor/materiais" element={<Materiais />} />
+
+          {/* Aluno routes */}
+          <Route path="/aluno" element={<AlunoHome />} />
+          <Route path="/aluno/sala/:id" element={<AlunoSala />} />
+          <Route path="/aluno/aulas" element={<AlunoAulas />} />
+          <Route path="/aluno/perfil" element={<AlunoPerfil />} />
+        </Routes>
+      </BrowserRouter>
+    </DataProvider>
   )
 }
 
