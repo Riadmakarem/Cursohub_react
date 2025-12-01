@@ -5,6 +5,8 @@ import Layout from '../../components/Layout'
 import VideoComments from '../../components/VideoComments'
 import VideoMaterials from '../../components/VideoMaterials'
 import { toEmbed } from '../../utils/helpers'
+import { storage } from '../firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import {
   Box,
   Paper,
@@ -46,13 +48,14 @@ import {
   Search as SearchIcon,
   NavigateNext as NextIcon,
   Home as HomeIcon,
-  School as SchoolIcon
+  School as SchoolIcon,
+  Edit as EditIcon
 } from '@mui/icons-material'
 
 export default function SalaDetalhe() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getRoom, createPlaylist, deletePlaylist, addVideo, deleteVideo, deleteRoom, getVideoComments, getRoomStats } = useData()
+  const { getRoom, createPlaylist, deletePlaylist, addVideo, updateVideo, deleteVideo, deleteRoom, getVideoComments, getRoomStats, addMaterial } = useData()
   const room = getRoom(id)
 
   const [playlistName, setPlaylistName] = useState('')
@@ -61,9 +64,11 @@ export default function SalaDetalhe() {
   const [videoTitle, setVideoTitle] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [videoDescription, setVideoDescription] = useState('')
+  const [videoMaterials, setVideoMaterials] = useState([])
   const [activeTab, setActiveTab] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteDialog, setDeleteDialog] = useState({ open: false, type: '', id: null, name: '' })
+  const [editDialog, setEditDialog] = useState({ open: false, video: null, title: '', description: '' })
 
   if (!room) {
     return (
@@ -95,17 +100,41 @@ export default function SalaDetalhe() {
     setPlaylistName('')
   }
 
-  function handleAddVideo(e) {
+  async function handleAddVideo(e) {
     e.preventDefault()
     if (!videoUrl.trim() || !selectedPlaylist) return
-    addVideo(room.id, selectedPlaylist, {
+
+    // Add the video first
+    const newVideo = addVideo(room.id, selectedPlaylist, {
       title: videoTitle.trim() || 'Videoaula',
       url: videoUrl.trim(),
       description: videoDescription.trim()
     })
+
+    // Upload materials if any
+    if (videoMaterials.length > 0) {
+      for (const file of videoMaterials) {
+        try {
+          const storageRef = ref(storage, `materials/${room.id}/${newVideo.id}/${file.name}`)
+          const snapshot = await uploadBytes(storageRef, file)
+          const downloadURL = await getDownloadURL(snapshot.ref)
+          
+          addMaterial(newVideo.id, room.id, selectedPlaylist, {
+            name: file.name,
+            type: file.type,
+            url: downloadURL,
+            size: file.size
+          })
+        } catch (error) {
+          console.error('Error uploading material:', error)
+        }
+      }
+    }
+
     setVideoTitle('')
     setVideoUrl('')
     setVideoDescription('')
+    setVideoMaterials([])
     setActiveTab(0)
   }
 
@@ -131,6 +160,24 @@ export default function SalaDetalhe() {
   function getVideoQuestionCount(videoId) {
     const comments = getVideoComments(videoId)
     return comments.filter(c => c.type === 'question' && !c.resolved).length
+  }
+
+  function handleEditVideo() {
+    if (!editDialog.video) return
+    updateVideo(room.id, selectedPlaylist, editDialog.video.id, {
+      title: editDialog.title.trim(),
+      description: editDialog.description.trim()
+    })
+    setEditDialog({ open: false, video: null, title: '', description: '' })
+  }
+
+  function openEditDialog(video) {
+    setEditDialog({
+      open: true,
+      video,
+      title: video.title,
+      description: video.description || ''
+    })
   }
 
   return (
@@ -346,6 +393,25 @@ export default function SalaDetalhe() {
                       rows={2}
                       margin="normal"
                     />
+                    
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Materiais (PDF ou Word)
+                      </Typography>
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setVideoMaterials(Array.from(e.target.files))}
+                        style={{ marginBottom: 8 }}
+                      />
+                      {videoMaterials.length > 0 && (
+                        <Typography variant="body2" color="text.secondary">
+                          {videoMaterials.length} arquivo(s) selecionado(s): {videoMaterials.map(f => f.name).join(', ')}
+                        </Typography>
+                      )}
+                    </Box>
+                    
                     <Button type="submit" variant="contained" startIcon={<AddIcon />} sx={{ mt: 1 }}>
                       Adicionar Vídeo
                     </Button>
@@ -407,6 +473,17 @@ export default function SalaDetalhe() {
                                     <QuestionIcon />
                                   </Badge>
                                 )}
+                                <IconButton
+                                  color="primary"
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    openEditDialog(v)
+                                  }}
+                                  sx={{ mr: 0.5 }}
+                                >
+                                  <EditIcon />
+                                </IconButton>
                                 <IconButton
                                   color="error"
                                   size="small"
@@ -498,6 +575,38 @@ export default function SalaDetalhe() {
           </Button>
           <Button color="error" variant="contained" onClick={handleDelete}>
             Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Video Dialog */}
+      <Dialog open={editDialog.open} onClose={() => setEditDialog({ open: false, video: null, title: '', description: '' })} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Vídeo</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Título"
+            value={editDialog.title}
+            onChange={e => setEditDialog({ ...editDialog, title: e.target.value })}
+            margin="normal"
+            autoFocus
+          />
+          <TextField
+            fullWidth
+            label="Descrição"
+            value={editDialog.description}
+            onChange={e => setEditDialog({ ...editDialog, description: e.target.value })}
+            margin="normal"
+            multiline
+            rows={3}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialog({ open: false, video: null, title: '', description: '' })}>
+            Cancelar
+          </Button>
+          <Button variant="contained" onClick={handleEditVideo}>
+            Salvar
           </Button>
         </DialogActions>
       </Dialog>

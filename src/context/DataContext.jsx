@@ -17,6 +17,7 @@ export function DataProvider({ children }) {
   const [rooms, setRooms] = useLocalStorage('cursohub_rooms', [])
   const [comments, setComments] = useLocalStorage('cursohub_comments', [])
   const [materials, setMaterials] = useLocalStorage('cursohub_materials', [])
+  const [materialFolders, setMaterialFolders] = useLocalStorage('cursohub_materialFolders', [])
 
   // ==================== ROOM MANAGEMENT ====================
   function createRoom(name, description = '') {
@@ -327,12 +328,13 @@ export function DataProvider({ children }) {
   }
 
   // ==================== MATERIALS ====================
-  function addMaterial(videoId, roomId, playlistId, material) {
+  function addMaterial(videoId, roomId, playlistId, material, folderId = null) {
     const newMaterial = {
       id: uid(),
       videoId,
       roomId,
       playlistId,
+      folderId,
       ...material, // { name, type, url, size }
       uploadedBy: currentUser?.id,
       createdAt: new Date().toISOString()
@@ -346,8 +348,49 @@ export function DataProvider({ children }) {
     return materials.filter(m => m.videoId === videoId)
   }
 
+  function getRoomMaterials(roomId) {
+    return materials.filter(m => m.roomId === roomId && !m.videoId)
+  }
+
   function deleteMaterial(materialId) {
     setMaterials(prev => prev.filter(m => m.id !== materialId))
+  }
+
+  function moveMaterialToFolder(materialId, folderId) {
+    setMaterials(prev => prev.map(m => 
+      m.id === materialId ? { ...m, folderId } : m
+    ))
+  }
+
+  // ==================== MATERIAL FOLDERS ====================
+  function createMaterialFolder(roomId, folderName) {
+    const newFolder = {
+      id: uid(),
+      roomId,
+      name: folderName,
+      createdAt: new Date().toISOString(),
+      createdBy: currentUser?.id
+    }
+    setMaterialFolders(prev => [...prev, newFolder])
+    return newFolder
+  }
+
+  function renameMaterialFolder(folderId, newName) {
+    setMaterialFolders(prev => prev.map(f => 
+      f.id === folderId ? { ...f, name: newName } : f
+    ))
+  }
+
+  function deleteMaterialFolder(folderId) {
+    // Move materials in this folder to root (no folder)
+    setMaterials(prev => prev.map(m => 
+      m.folderId === folderId ? { ...m, folderId: null } : m
+    ))
+    setMaterialFolders(prev => prev.filter(f => f.id !== folderId))
+  }
+
+  function getRoomFolders(roomId) {
+    return materialFolders.filter(f => f.roomId === roomId)
   }
 
   // ==================== GETTERS ====================
@@ -489,7 +532,14 @@ export function DataProvider({ children }) {
     // Materials
     addMaterial,
     getVideoMaterials,
+    getRoomMaterials,
     deleteMaterial,
+    moveMaterialToFolder,
+    // Material Folders
+    createMaterialFolder,
+    renameMaterialFolder,
+    deleteMaterialFolder,
+    getRoomFolders,
     // Search
     searchVideos
   }

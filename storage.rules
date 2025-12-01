@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow anyone to read files
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Room materials - professors can upload, everyone can read
+    match /room_materials/{roomId}/{fileName} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Video materials - professors can upload, everyone can read
+    match /materials/{roomId}/{videoId}/{fileName} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

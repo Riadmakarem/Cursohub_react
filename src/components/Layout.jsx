@@ -36,6 +36,7 @@ import {
   Notifications,
   Logout,
   MarkEmailRead,
+  Description,
 } from '@mui/icons-material'
 
 const drawerWidth = 280
@@ -64,6 +65,7 @@ export default function Layout({ children }) {
   const alunoMenu = [
     { text: 'Início', icon: <Home />, path: '/aluno' },
     { text: 'Minhas Aulas', icon: <PlayCircle />, path: '/aluno/aulas' },
+    { text: 'Materiais', icon: <Description />, path: '/aluno/materiais' },
     { text: 'Meu Progresso', icon: <TrendingUp />, path: '/aluno/progresso' },
     { text: 'Perfil', icon: <Person />, path: '/aluno/perfil' },
   ]
